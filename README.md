@@ -1,144 +1,185 @@
-# JavaCard Template project with Gradle
+# SSKR for JavaCard
 
-[![Build
-Status](https://travis-ci.org/crocs-muni/javacard-gradle-template-edu.svg?branch=master)](https://travis-ci.org/crocs-muni/javacard-gradle-template-edu)
-
-This is simple JavaCard project template using Gradle build system.
-
-You can develop your JavaCard applets and build cap files with the Gradle!
-Moreover the project template enables you to test the applet with [JCardSim] or on the physical cards.
+This is an implementation of [Sharded Secret Key Reconstruction (SSKR)](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-011-sskr.md)
+for JavaCard environments.
 
 Gradle project contains one module:
+- `applet`, the JavaCard applet can be used both for testing and building a `.cap` file
 
-- `applet`: contains the javacard applet. Can be used both for testing and building CAP
+## Building
 
-Features:
- - Gradle build (CLI / IntelliJ Idea)
- - Build CAP for applets
- - Test applet code in [JCardSim] / physical cards
- - IntelliJ Idea: Coverage
- - Travis support
-
-### Template
-
-The template contains simple Hello World applet generating random bytes on any APDU message received.
-There is also implemented very simple test that sends static APDU command to this applet - in JCardSim.
-
-The Gradle project can be opened and run in the IntelliJ Idea.
-
-Running in IntelliJ Idea gives you a nice benefit: *Coverage*!
-
-## How to use
-
-- Clone this template repository:
-
-```
-git clone --recursive https://github.com/crocs-muni/javacard-gradle-template-edu.git
-```
-
-- Implement your applet in the `applet` module.
-
-- Run Gradle wrapper `./gradlew` on Unix-like system or `./gradlew.bat` on Windows
-to build the project for the first time (Gradle will be downloaded if not installed).
-
-## Building cap
-
-- Setup your Applet ID (`AID`) in the `./applet/build.gradle`.
-
-- Run the `buildJavaCard` task:
+Run the `buildJavaCard` task:
 
 ```bash
-./gradlew buildJavaCard  --info --rerun-tasks
+./gradlew buildJavaCard
 ```
 
-Generates a new cap file `./applet/out/cap/applet.cap`
-
-Note: `--rerun-tasks` is to force re-run the task even though the cached input/output seems to be up to date.
+Generates a new cap file `./applet/build/javacard/com.proxy.sskr.cap`
 
 Typical output:
 
 ```
-[ant:cap] [ INFO: ] Converter [v3.0.5]
-[ant:cap] [ INFO: ]     Copyright (c) 1998, 2015, Oracle and/or its affiliates. All rights reserved.
-[ant:cap]
-[ant:cap]
-[ant:cap] [ INFO: ] conversion completed with 0 errors and 0 warnings.
-[ant:verify] XII 10, 2017 10:45:05 ODP.
-[ant:verify] INFO: Verifier [v3.0.5]
-[ant:verify] XII 10, 2017 10:45:05 ODP.
-[ant:verify] INFO:     Copyright (c) 1998, 2015, Oracle and/or its affiliates. All rights reserved.
-[ant:verify]
-[ant:verify]
-[ant:verify] XII 10, 2017 10:45:05 ODP.
-[ant:verify] INFO: Verifying CAP file /Users/dusanklinec/workspace/jcard/applet/out/cap/applet.cap
-[ant:verify] javacard/framework/Applet
-[ant:verify] XII 10, 2017 10:45:05 ODP.
-[ant:verify] INFO: Verification completed with 0 warnings and 0 errors.
+[ant:convert] [ INFO: ] Converter [v3.1.0]
+[ant:convert] [ INFO: ] Copyright (c) 1998, 2021, Oracle and/or its affiliates. All rights reserved.
+[ant:convert]
+[ant:convert] [ INFO: ] conversion completed with 0 errors and 0 warnings.
+
+[ant:cap] INFO: using JavaCard 3.1.0 SDK in ./libs-sdks/jc310r20210706_kit
+[ant:cap] INFO: targeting JavaCard 3.0.4 SDK in ..libs-sdks.jc304_kit
+[ant:cap] Building CAP with 1 applet from package com.proxy.sskr (AID: FFFFFF040506)
+[ant:cap] com.proxy.sskr.Applet FFFFFF04050607
+[ant:compile] Compiling files from ./applet/src/main/java
+[ant:compile] Compiling 4 source files to /tmp/jccpro5411199499583907175
+[ant:verify] Verification passed
+[ant:cap] CAP saved to ./applet/build/javacard/com.proxy.sskr.cap
+[ant:exp] EXP saved to ./applet/build/javacard/com.proxy.sskr.exp/com/proxy/sskr/javacard/sskr.exp
 ```
 
 ## Installation on a (physical) card
+
+> **Warning**
+> Make sure to set the correct ISD key in [`gradle.properties`](./gradle.properties).
+> Attemping to authenticate with an incorrect key will increment the internal retry
+> counter of most secure elements, and eventually lock the card permanently.
+>
+> ```
+> # Replace with real key for distribution (use env variable or command line arg).
+> issuerKey=40:41:42:43:44:45:46:47:48:49:4A:4B:4C:4D:4E:4F
+> ```
+
+> **Warning**
+> This will delete any previous instances of the applet on your card.
+> Make sure you are prepared to lose any persistent data they store.
 
 ```bash
 ./gradlew installJavaCard
 ```
 
-Or inspect already installed applets:
+To inspect already installed applets:
 
 ```bash
 ./gradlew listJavaCard
 ```
 
-## Running on simulator (jCardSim)
-
-As simple as:
-
-```bash
-./gradlew run
-```
-
-By default the run task will run the main Java application implemented at: `main/java/main/Run.java`, using the `HelloWorldApplet` applet.
-
 ## Running tests
 
 ```
-./gradlew test --info --rerun-tasks
+./gradlew test --rerun-tasks --info
 ```
 
-Output:
+Typical output:
 
 ```
-Running test: Test method hello(AppletTest)
+tests.AppletTest > echo() STANDARD_OUT
+    DEBUG | 2023-03-03 12:50:56 | [Test worker] cardTools.CardManager:307 | --> 800000000142 (6 B)
+    DEBUG | 2023-03-03 12:50:56 | [Test worker] cardTools.Util:115 | --> [800000000142] (6 B)
+    DEBUG | 2023-03-03 12:50:56 | [Test worker] cardTools.Util:122 | <-- 42 9000 (1 B)
+    DEBUG | 2023-03-03 12:50:56 | [Test worker] cardTools.CardManager:315 | <-- 42 9000 (1) [0 ms]
 
-Gradle suite > Gradle test > AppletTest.hello STANDARD_OUT
-    Connecting to card... Done.
-    --> [00C00000080000000000000000] 13
-    <-- 51373E8B6FDEC284DB569204CA13D2CAA23BD1D85DCAB02A0E3D50461E73F1BB 9000 (32)
-    ResponseAPDU: 34 bytes, SW=9000
+tests.ShamirTest > roundtrip1() STANDARD_OUT
+    secret: 0FF784DF000C4380A5ED683F7E6E3DCF
+    0: 00112233445566778899AABBCCDDEEFF
+    1: D43099FE444807C46921A4F33A2A798B
+    2: D9AD4E3BEC2E1A7485698823ABF05D36
+    3: 0D8CF5F6EC337BC764D1866B5D07CA42
+    4: 1AA7FE3199BC5092EF3816B074CABDF2
+    from 1: D43099FE444807C46921A4F33A2A798B
+    from 2: D9AD4E3BEC2E1A7485698823ABF05D36
+    from 4: 1AA7FE3199BC5092EF3816B074CABDF2
+    recovered secret: 0FF784DF000C4380A5ED683F7E6E3DCF
+    verified secret: true
+
+tests.ShamirTest > roundtrip2() STANDARD_OUT
+    secret: 204188BFA6B440A1BDFD6753FF55A8241E07AF5C5BE943DB917E3EFABC184B1A
+    0: 2DCD14C2252DC8489AF3985030E74D5A48E8EFF1478AB86E65B43869BF39D556
+    1: A1DFDD798388AADA635B9974472B4FC59A32AE520C42C9F6A0AF70149B882487
+    2: 2EE99DAF727C0C7773B89A18DE64497FF7476DACD1015A45F482A893F7402CEF
+    3: A2FB5414D4D96EE58A109B3CA9A84BE0259D2C0F9AC92BDD3199E0EED3F1DD3E
+    4: 2B851D188B8F5B3653659CC0F7FA45102DADF04B708767385CD803862FCB3C3F
+    5: A797D4A32D2A39A4AACD9DE48036478FFF77B1E83B4F16A099C34BFB0B7ACDEE
+    6: 28A19475DCDE9F09BA2E9E881979413592027216E60C8513CDEE937C67B2C586
+    from 3: A2FB5414D4D96EE58A109B3CA9A84BE0259D2C0F9AC92BDD3199E0EED3F1DD3E
+    from 4: 2B851D188B8F5B3653659CC0F7FA45102DADF04B708767385CD803862FCB3C3F
+    recovered secret: 204188BFA6B440A1BDFD6753FF55A8241E07AF5C5BE943DB917E3EFABC184B1A
+    verified secret: true
+
+tests.ShamirTest > recoverFromReference1() STANDARD_OUT
+    recovered secret: 0FF784DF000C4380A5ED683F7E6E3DCF
+    verified secret: true
+
+tests.ShamirTest > recoverFromReference2() STANDARD_OUT
+    recovered secret: 204188BFA6B440A1BDFD6753FF55A8241E07AF5C5BE943DB917E3EFABC184B1A
+    verified secret: true
+
+tests.SSKRTest > roundtrip() STANDARD_OUT
+    secret: 7DAA851251002874E1A1995F0897E6B1
+    0: 001111010091405D03C53896A1AB7FEA914B659E0F
+    1: 00111101018F53CF68BDBFC092973B06D2AEE60559
+    2: 0011110102AD6662D5352D3AC7D3F729179A78B3A3
+    3: 001111120000112233445566778899AABBCCDDEEFF
+    4: 0011111201FC2D359E6DC33A031129B9D0A95039A3
+    5: 00111112022E3E180843AC4ABEB10F5B7E835040D3
+    6: 0011111203D2020FA56A3A16CA28BF4815E6DD978F
+    7: 0011111204450806B605A9587ABA37226670DAC5C1
+    from 1 (0.1): 00111101018F53CF68BDBFC092973B06D2AEE60559
+    from 2 (0.2): 0011110102AD6662D5352D3AC7D3F729179A78B3A3
+    from 3 (1.0): 001111120000112233445566778899AABBCCDDEEFF
+    from 5 (1.2): 00111112022E3E180843AC4ABEB10F5B7E835040D3
+    from 6 (1.3): 0011111203D2020FA56A3A16CA28BF4815E6DD978F
+    recovered secret: 7DAA851251002874E1A1995F0897E6B1
+    verified secret: true
+
+tests.SSKRTest > recoverFromReference1() STANDARD_OUT
+    recovered secret: 7DAA851251002874E1A1995F0897E6B1
+    verified secret: true
+
+tests.SSKRTest > recoverWithPartialTransactions() STANDARD_OUT
+    recovered secret: 7DAA851251002874E1A1995F0897E6B1
+    verified secret: true
+
+tests.SSKRTest > recoverWithTwoTransactions() STANDARD_OUT
+    recovered secret: 7DAA851251002874E1A1995F0897E6B1
+    verified secret: true
+
+tests.SSKRTest > recoverWithDuplicates() STANDARD_OUT
+    recovered secret: 7DAA851251002874E1A1995F0897E6B1
+    verified secret: true
+
+tests.SSKRTest > reset() STANDARD_OUT
+    recovered secret: 7DAA851251002874E1A1995F0897E6B1
+    verified secret: true
+
+Finished generating test XML results (0.006 secs) into: ./applet/build/test-results/test
+Finished generating test html results (0.009 secs) into: ./applet/build/reports/tests/test
 ```
+
+## Performance
+
+> TODO
+
+## Origin, Authors, Copyright & Licenses
+
+Unless otherwise noted (either in this [README.md](./README.md) or in the file's header comments)
+the contents of this repository are Copyright © 2023 by Proxy, Inc, and are [licensed](./LICENSE)
+under the [BSD-2-Clause Plus Patent License](https://spdx.org/licenses/BSD-2-Clause-Patent.html).
+
+This table below also establishes provenance (repository of origin, permalink, and commit id) for
+files included from repositories that are outside of this repository. Contributors to these files
+are listed in the commit history for each repository, first with changes found in the commit
+ history of this repo, then in changes in the commit history of their repo of their origin.
+
+| File   | From   | Commit  | Authors & Copyright (c)  | License  |
+| ------ | ------ | ------- | ------------------------ | -------- |
+| GF256.java GF256Test.java | [codahale/shamir](https://github.com/codahale/shamir) | [codahale/shamir@f44e1ce](https://github.com/codahale/shamir/commit/f44e1cec1919103ad942252b42dcdf9630461c0a) | 2017 Coda Hale (coda.hale@gmail.com) | [Apache-2.0](https://spdx.org/licenses/Apache-2.0)
 
 ## Dependencies
 
-This project uses mainly:
+Based on the https://github.com/crocs-muni/javacard-gradle-template-edu template, which uses:
 
-- https://github.com/bertrandmartel/javacard-gradle-plugin
+- https://github.com/ph4r05/javacard-gradle-plugin
 - https://github.com/martinpaljak/ant-javacard
 - https://github.com/martinpaljak/oracle_javacard_sdks
 - https://github.com/licel/jcardsim
-- Petr Svenda scripts
-
-Kudos for a great work!
-
-### JavaCard support
-
-Thanks to Martin Paljak's [ant-javacard] and [oracle_javacard_sdks] we support:
-
-- JavaCard 2.1.2
-- JavaCard 2.2.1
-- JavaCard 2.2.2
-- JavaCard 3.0.3
-- JavaCard 3.0.4
-- JavaCard 3.0.5
-- JavaCard 3.1.0r20210706
 
 ## Supported Java versions
 
@@ -150,64 +191,4 @@ have problems with recognizing some certificates as valid.
 Only some Java versions are supported by the JavaCard SDKs.
 Check the following compatibility table for more info:
 https://github.com/martinpaljak/ant-javacard/wiki/Version-compatibility
-
-## Coverage
-
-This is a nice benefit of the IntelliJ Idea - gives you coverage
-results out of the box.
-
-You can see the test coverage on your applet code.
-
-- Go to Gradle plugin in IntelliJ Idea
-- Tasks -> verification -> test
-- Right click - run with coverage.
-
-## Troubleshooting
-
-If you experience the following error:
-
-```
-java.lang.VerifyError: Expecting a stackmap frame at branch target 19
-    Exception Details:
-      Location:
-        javacard/framework/APDU.<init>(Z)V @11: ifeq
-      Reason:
-        Expected stackmap frame at this location.
-```
-
-Then try running JVM with `-noverify` option.
-
-In the IntelliJ Idea this can be configured in the top tool bar
-with run configurations combo box -> click -> Edit Configurations -> VM Options.
-
-However, the `com.klinec:jcardsim:3.0.5.11` should not need the `-noverify`.
-
-### Invalid APDU loaded
-
-You may experience error like this: `Invalid APDU loaded. You may have JC API in your classpath before JCardSim. Classpath:`
-
-This error is thrown by JCardSim which tries to load APDU class augmented with another methods. The augmented APDU version is contained in the JCardSim JAR.
-However, if `api_class.jar` from the JavaCard SDK is on the classpath before the JCardSim, this problem occurs. The classpath ordering causes non-augmented version is loaded which prevents JCardSim from correct function.
-
-gradle-javacard-plugin v1.7.4 should fix this error.
-
-If you still experience this in IntelliJ Idea try: open project structure settings -> modules -> applet_test and move JCardSim to the top so it appears first on the classpath.
-This has to be done with each project reload from the Gradle.
-
-## Roadmap
-
-TODOs for this project:
-
-- Polish Gradle build scripts
-- Add basic libraries as maven dependency.
-
-## Contributions
-
-Community feedback is highly appreciated - pull requests are welcome!
-
-
-
-[JCardSim]: https://jcardsim.org/
-[ant-javacard]: https://github.com/martinpaljak/ant-javacard
-[oracle_javacard_sdks]: https://github.com/martinpaljak/oracle_javacard_sdks
 

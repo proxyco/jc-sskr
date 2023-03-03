@@ -1,11 +1,10 @@
 package tests;
 
-import applet.MainApplet;
-import cardTools.CardManager;
-import cardTools.CardType;
-import cardTools.RunConfig;
-import cardTools.Util;
+import cardTools.*;
 
+import com.licel.jcardsim.smartcardio.CardSimulator;
+
+import javacard.framework.Applet;
 import javax.smartcardio.CardException;
 import javax.smartcardio.CommandAPDU;
 import javax.smartcardio.ResponseAPDU;
@@ -17,11 +16,14 @@ import java.util.ArrayList;
  *
  * @author Petr Svenda, Dusan Klinec (ph4r05)
  */
-public class BaseTest {
-    private static String APPLET_AID = "01ffff0405060708090102";
-    private static byte APPLET_AID_BYTE[] = Util.hexStringToByteArray(APPLET_AID);
+public class BaseTest
+{
+    protected static String APPLET_AID = "ffffff04050607";
+    protected static byte APPLET_AID_BYTE[] = Util.hexStringToByteArray(APPLET_AID);
 
+    protected Class<? extends Applet> appletToSimulate;
     protected CardType cardType = CardType.JCARDSIMLOCAL;
+    protected CardSimulator simulator = null;
 
     protected boolean simulateStateful = false;
     protected CardManager statefulCard = null;
@@ -76,9 +78,10 @@ public class BaseTest {
 
         } else if (cardType != CardType.PHYSICAL && cardType != CardType.PHYSICAL_JAVAX) {
             // Running in the simulator
-            runCfg.setAppletToSimulate(MainApplet.class)
+            runCfg.setAppletToSimulate(appletToSimulate)
                     .setTestCardType(CardType.JCARDSIMLOCAL)
-                    .setbReuploadApplet(true)
+                    .setSimulator(simulator)
+                    //.setReuploadApplet(true)
                     .setInstallData(installData);
         }
 
