@@ -1,5 +1,7 @@
 # SSKR for JavaCard
 
+[![Build status](https://github.com/proxyco/jc-sskr/actions/workflows/gradle.yml/badge.svg)](https://github.com/proxyco/jc-sskr/actions/workflows/gradle.yml)
+
 This is an implementation of [Sharded Secret Key Reconstruction (SSKR)](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-011-sskr.md)
 for JavaCard environments.
 
