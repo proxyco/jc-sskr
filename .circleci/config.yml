@@ -1,0 +1,40 @@
+#
+# Copyright © 2023 Proxy, Inc (proxy.com)
+# Licensed under the "BSD-2-Clause Plus Patent License"
+#
+
+version: 2.1
+
+orbs:
+  # The maven orb contains a set of prepackaged circleci configuration you can use repeatedly in your configurations files
+  # Orb commands and jobs help you with common scripting around a language/tool
+  # so you dont have to copy and paste it everywhere.
+  # See the orb documentation here: https://circleci.com/developer/orbs/orb/circleci/maven
+  maven: circleci/maven@1.3
+
+jobs:
+  build:
+    docker:
+      - image: cimg/openjdk:11.0
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - run:
+          name: Checkout submodules
+          command: |
+            git submodule sync
+            git submodule update --init
+      - run:
+          name: Check
+          command: |
+            ./gradlew check --info
+          when: always
+      - run:
+          name: Build
+          command: |
+            ./gradlew buildJavaCard --info
+          when: always
+      - store_test_results:
+          path: ./applet/build/test-results
+      - store_artifacts:
+          path: ./applet/build/javacard

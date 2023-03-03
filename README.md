@@ -1,5 +1,7 @@
 # SSKR for JavaCard
 
+![Build Status](https://img.shields.io/circleci/build/github/proxyco/jc-sskr?style=flat-square)
+
 This is an implementation of [Sharded Secret Key Reconstruction (SSKR)](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-011-sskr.md)
 for JavaCard environments.
 
