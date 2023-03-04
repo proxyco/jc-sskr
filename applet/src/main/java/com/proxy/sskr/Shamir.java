@@ -123,7 +123,8 @@ public class Shamir
     }
 
     // points are stored as a sequence of coordinates [x_1, y_1, .., x_t, y_t]
-    // allocate dynamically because we do not want to reserve transient memory for the max case
+    // allocate dynamically because we do not want to reserve transient memory
+    // for the maximum case; may fail with SystemException.NO_TRANSIENT_SPACE.
     byte[] points = JCSystem.makeTransientByteArray((short)(t * 2), JCSystem.CLEAR_ON_DESELECT);
     for (i = 0; i < secretLen; i++) {
       // compute shares y_i for (t - 2) < i ≤ n using Lagrange interpolation at x_i = (i - 1)
