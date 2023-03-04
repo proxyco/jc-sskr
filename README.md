@@ -176,7 +176,7 @@ are listed in the commit history for each repository, first with changes found i
 
 ## Dependencies
 
-Based on the https://github.com/crocs-muni/javacard-gradle-template-edu template, which uses:
+Based on the [crocs-muni/javacard-gradle-template-edu](https://github.com/crocs-muni/javacard-gradle-template-edu) template, which uses:
 
 - https://github.com/ph4r05/javacard-gradle-plugin
 - https://github.com/martinpaljak/ant-javacard
