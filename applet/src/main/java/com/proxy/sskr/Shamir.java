@@ -90,8 +90,8 @@ public class Shamir
    *
    * @return number of bytes written to the output buffer.
    *
-   * @throws `CryptoException.ILLEGAL_VALUE` if `t` or `n` do not satisfy `1 ≤ t ≤ n ≤ 16`,
-   *    or if the secret length is less than 16 bytes or greater than 32 bytes.
+   * @throws `CryptoException.ILLEGAL_VALUE` if `t` or `n` do not satisfy `1 ≤ t ≤ n ≤ 16`, or
+   *    if the secret length is less than 16 bytes or greater than 32 bytes.
    */
   public short split(byte t, byte n,
       byte[] secret, short secretOff, short secretLen,
@@ -99,6 +99,9 @@ public class Shamir
   {
     short i, j, k;
 
+    if (secretLen < MIN_SECRET_SIZE || secretLen > MAX_SECRET_SIZE || (secretLen & 1) != 0) {
+      CryptoException.throwIt(CryptoException.ILLEGAL_VALUE);
+    }
     if (t <= 0 || t > n || n > MAX_SHARE_COUNT) {
       CryptoException.throwIt(CryptoException.ILLEGAL_VALUE);
     }
@@ -166,18 +169,33 @@ public class Shamir
    * threshold number required for recovery, a non-zero value may be returned even
    * though the secret is not recovered correctly, with probability 2^-32.
    *
-   * @throws `CryptoException.ILLEGAL_VALUE` if `sharesLen` is not a multiple of `t`.
+   * @throws `CryptoException.ILLEGAL_VALUE` if `sharesLen` is not a multiple of `t`,
+   *    if the secret length is less than 16 bytes or greater than 32 bytes, or
+   *    if `t` does not satisfy `1 ≤ t ≤ 16`.
    */
   public short combine(byte t, byte[] x,
       byte[] shares, short sharesOff, short sharesLen,
       byte[] secret, short secretOff)
   {
+    short i, j, k, secretLen;
+
     if (sharesLen == 0 || (sharesLen % t) != 0) {
       CryptoException.throwIt(CryptoException.ILLEGAL_VALUE);
     }
 
-    short secretLen = (short)(sharesLen / t);
-    short i, j, k;
+    secretLen = (short)(sharesLen / t);
+    if (secretLen < MIN_SECRET_SIZE || secretLen > MAX_SECRET_SIZE || (secretLen & 1) != 0) {
+      CryptoException.throwIt(CryptoException.ILLEGAL_VALUE);
+    }
+
+    if (t <= 0 || t > MAX_SHARE_COUNT) {
+      CryptoException.throwIt(CryptoException.ILLEGAL_VALUE);
+    }
+    if (t == 1) {
+      // just return the first share
+      Util.arrayCopyNonAtomic(shares, sharesOff, secret, secretOff, secretLen);
+      return secretLen;
+    }
 
     // points are stored as a sequence of coordinates [x_1, y_1, .., x_t, y_t]
     // allocate dynamically because we do not want to reserve transient memory

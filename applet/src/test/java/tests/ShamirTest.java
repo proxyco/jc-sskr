@@ -103,11 +103,19 @@ public class ShamirTest
   {
     roundtrip(
       ByteUtil.byteArray("0ff784df000c4380a5ed683f7e6e3dcf"),
-      (byte) 3, (byte) 5, new byte[] {1, 2, 4});
+      (byte) 1, (byte) 2, new byte[] {0});
   }
 
   @Test
   void roundtrip2() throws Exception
+  {
+    roundtrip(
+      ByteUtil.byteArray("0ff784df000c4380a5ed683f7e6e3dcf"),
+      (byte) 3, (byte) 5, new byte[] {1, 2, 4});
+  }
+
+  @Test
+  void roundtrip3() throws Exception
   {
     roundtrip(
       ByteUtil.byteArray("204188bfa6b440a1bdfd6753ff55a8241e07af5c5be943db917e3efabc184b1a"),
