@@ -106,8 +106,17 @@ public class SSKRTest
   }
 
   @Test
-  void roundtrip() throws Exception
+  void roundtrip1() throws Exception
   {
+    // single group, 2-of-3
+    roundtrip(ByteUtil.byteArray("7daa851251002874e1a1995f0897e6b1"),
+        (byte) 1, new byte[] {2, 3}, new byte[] {0, 1, 2});
+  }
+
+  @Test
+  void roundtrip2() throws Exception
+  {
+    // two groups, 2-of-3 and 3-of-5
     roundtrip(ByteUtil.byteArray("7daa851251002874e1a1995f0897e6b1"),
         (byte) 2, new byte[] {2, 3, 3, 5}, new byte[] {1, 2, 3, 5, 6});
   }
