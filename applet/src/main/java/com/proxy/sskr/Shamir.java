@@ -29,24 +29,40 @@ public class Shamir
   public final static byte MIN_SECRET_SIZE = (byte) 16;
   public final static byte DIGEST_SIZE = (byte) 4;
 
-  private RandomData random;
-  private Signature signer;
+  private Crypto crypto;
+  private RandomData randomSource;
 
   // temporary memory for calculating and verifying secret digest
   private byte[] digest;
-  private byte[] sig;
+
+  // set default allocation type to CLEAR_ON_RESET transient memory.
+  private byte memoryType = JCSystem.MEMORY_TYPE_TRANSIENT_RESET;
 
   /**
    * Instantiates a new instance.
    */
-  public Shamir(RandomData randomSource) {
-    random = randomSource;
+  public Shamir(RandomData randomSource, byte memoryType) {
+    crypto = Crypto.getInstance();
+    this.randomSource = randomSource;
+    this.memoryType = memoryType;
     // reserve extra DIGEST_SIZE bytes at the end for use in verification
-    digest = JCSystem.makeTransientByteArray(
-        (short)(MAX_SECRET_SIZE + DIGEST_SIZE), JCSystem.CLEAR_ON_DESELECT);
-    sig = JCSystem.makeTransientByteArray(
-        (short)(MessageDigest.LENGTH_SHA_256), JCSystem.CLEAR_ON_DESELECT);
-    signer = Signature.getInstance(Signature.ALG_HMAC_SHA_256, false);
+    digest = createBuffer((short)(MAX_SECRET_SIZE + DIGEST_SIZE));
+  }
+
+  /**
+   * Allocates a buffer of appropriate memory type.
+   */
+  private byte[] createBuffer(short size)
+  {
+    switch (memoryType) {
+      case JCSystem.MEMORY_TYPE_TRANSIENT_DESELECT:
+        return JCSystem.makeTransientByteArray(size, JCSystem.CLEAR_ON_DESELECT);
+      case JCSystem.MEMORY_TYPE_TRANSIENT_RESET:
+        return JCSystem.makeTransientByteArray(size, JCSystem.CLEAR_ON_RESET);
+      case JCSystem.MEMORY_TYPE_PERSISTENT:
+      default:
+        return new byte[size];
+    }
   }
 
   /**
@@ -58,16 +74,10 @@ public class Shamir
       byte[] data, short dataOff, short dataLen,
       byte[] out, short outOff)
   {
-    HMACKey key = (HMACKey) KeyBuilder.buildKey(KeyBuilder.TYPE_HMAC_TRANSIENT_DESELECT,
-        (short)(randomDataLen << 3) /* key length in bits */, false);
-    key.setKey(randomData, randomDataOff, randomDataLen);
-
-    signer.init(key, Signature.MODE_SIGN);
-    signer.sign(data, dataOff, dataLen, sig, (short) 0);
-    out[outOff++] = sig[0];
-    out[outOff++] = sig[1];
-    out[outOff++] = sig[2];
-    out[outOff++] = sig[3];
+    crypto.hmac256(
+        randomData, randomDataOff, randomDataLen,
+        data, dataOff, dataLen,
+        out, outOff, (short) DIGEST_SIZE);
   }
 
   /**
@@ -114,7 +124,7 @@ public class Shamir
     }
 
     // generate a digest of the secret as a checksum
-    random.generateData(digest, (short) DIGEST_SIZE, (short)(secretLen - DIGEST_SIZE));
+    randomSource.generateData(digest, (short) DIGEST_SIZE, (short)(secretLen - DIGEST_SIZE));
 
     createDigest(digest, (short) DIGEST_SIZE, (short)(secretLen - DIGEST_SIZE),
         secret, secretOff, secretLen,
@@ -122,13 +132,13 @@ public class Shamir
 
     // generate y_1 .. y_(t-2) shares randomly
     if (t > 2) {
-      random.generateData(shares, sharesOff, (short)((t - 2) * secretLen));
+      randomSource.generateData(shares, sharesOff, (short)((t - 2) * secretLen));
     }
 
     // points are stored as a sequence of coordinates [x_1, y_1, .., x_t, y_t]
     // allocate dynamically because we do not want to reserve transient memory
     // for the maximum case; may fail with SystemException.NO_TRANSIENT_SPACE.
-    byte[] points = JCSystem.makeTransientByteArray((short)(t * 2), JCSystem.CLEAR_ON_DESELECT);
+    byte[] points = createBuffer((short)(t * 2));
     for (i = 0; i < secretLen; i++) {
       // compute shares y_i for (t - 2) < i ≤ n using Lagrange interpolation at x_i = (i - 1)
       // across the set of points:
@@ -200,7 +210,7 @@ public class Shamir
     // points are stored as a sequence of coordinates [x_1, y_1, .., x_t, y_t]
     // allocate dynamically because we do not want to reserve transient memory
     // for the maximum case; may fail with SystemException.NO_TRANSIENT_SPACE.
-    byte[] points = JCSystem.makeTransientByteArray((short)(t * 2), JCSystem.CLEAR_ON_DESELECT);
+    byte[] points = createBuffer((short)(t * 2));
     for (i = 0; i < secretLen; i++) {
       for (j = 0, k = 0; j < t; j++) {
         points[k++] = x[j];

@@ -32,7 +32,7 @@ public class SSKR
   public final static byte MAX_SHARE_COUNT = Shamir.MAX_SHARE_COUNT;
   public final static byte METADATA_SIZE = (byte) 5;
 
-  private RandomData random;
+  private RandomData randomSource;
   private Shamir shamir;
 
   // identifier of the share set currently being reconstructed
@@ -61,10 +61,30 @@ public class SSKR
   // sentinel value for shares that have not yet been filled.
   private final static byte UNUSED = (byte) 0xff;
 
-  public SSKR(RandomData randomSource)
+  // set default allocation type to CLEAR_ON_RESET transient memory.
+  private byte memoryType = JCSystem.MEMORY_TYPE_TRANSIENT_RESET;
+
+  public SSKR(RandomData randomSource, byte memoryType)
   {
-    random = randomSource;
-    shamir = new Shamir(randomSource);
+    this.randomSource = randomSource;
+    this.memoryType = memoryType;
+    shamir = new Shamir(randomSource, memoryType);
+  }
+
+  /**
+   * Allocates a buffer of appropriate memory type.
+   */
+  private byte[] createBuffer(short size)
+  {
+    switch (memoryType) {
+      case JCSystem.MEMORY_TYPE_TRANSIENT_DESELECT:
+        return JCSystem.makeTransientByteArray(size, JCSystem.CLEAR_ON_DESELECT);
+      case JCSystem.MEMORY_TYPE_TRANSIENT_RESET:
+        return JCSystem.makeTransientByteArray(size, JCSystem.CLEAR_ON_RESET);
+      case JCSystem.MEMORY_TYPE_PERSISTENT:
+      default:
+        return new byte[size];
+    }
   }
 
   /**
@@ -114,11 +134,10 @@ public class SSKR
     // nominally, this is at most (16 * 32) + (16 * 32) = 1024 bytes, which is a lot to reserve.
     // instead, we try to allocate dynamically only what is needed.
     // this may throw `SystemException.NO_TRANSIENT_SPACE`.
-    byte[] buf = JCSystem.makeTransientByteArray(
-        (short)((groupCount + largestGroup(groups)) * secretLen), JCSystem.CLEAR_ON_DESELECT);
+    byte[] buf = createBuffer((short)((groupCount + largestGroup(groups)) * secretLen));
 
     // generate a random identifier
-    random.generateData(buf, (short) 0, (short) 2);
+    randomSource.generateData(buf, (short) 0, (short) 2);
     id = Util.getShort(buf, (short) 0);
 
     // generate group shares
