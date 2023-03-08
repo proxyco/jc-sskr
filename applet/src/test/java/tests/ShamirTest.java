@@ -57,7 +57,7 @@ public class ShamirTest
 
   @BeforeEach
   public void setUpMethod() throws Exception {
-    shamir = new Shamir(new MockRandomData());
+    shamir = new Shamir(new MockRandomData(), JCSystem.MEMORY_TYPE_TRANSIENT_RESET);
   }
 
   @AfterEach

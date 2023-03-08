@@ -57,7 +57,7 @@ public class SSKRTest
 
   @BeforeEach
   public void setUpMethod() throws Exception {
-    sskr = new SSKR(new MockRandomData());
+    sskr = new SSKR(new MockRandomData(), JCSystem.MEMORY_TYPE_TRANSIENT_RESET);
   }
 
   @AfterEach
