@@ -157,7 +157,14 @@ Finished generating test html results (0.009 secs) into: ./applet/build/reports/
 
 ## Performance
 
-> TODO
+Average of three runs to generate a set of shares from a 128-bit secret.
+
+| Group descriptors         | JCOP3 J3H145 | SLJ52WML140 |
+| ------------------------- | -----------: | ----------: |
+| 1 of (1,1)                |       125 ms |       42 ms |
+| 1 of (2,3)                |       388 ms |      242 ms |
+| 1 of (3,5)                |       818 ms |      608 ms |
+| 2 of (2,3), (2,3), (2,3)  |      1440 ms |      860 ms |
 
 ## Origin, Authors, Copyright & Licenses
 
@@ -168,7 +175,7 @@ under the [BSD-2-Clause Plus Patent License](https://spdx.org/licenses/BSD-2-Cla
 This table below also establishes provenance (repository of origin, permalink, and commit id) for
 files included from repositories that are outside of this repository. Contributors to these files
 are listed in the commit history for each repository, first with changes found in the commit
- history of this repo, then in changes in the commit history of their repo of their origin.
+history of this repo, then in changes in the commit history of their repo of origin.
 
 | File   | From   | Commit  | Authors & Copyright (c)  | License  |
 | ------ | ------ | ------- | ------------------------ | -------- |

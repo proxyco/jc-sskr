@@ -155,4 +155,35 @@ javacard {
       // }
     }
   }
+
+  scripts {
+    script {
+      name 'select'
+      apdu '00A4040006:ff:ff:ff:04:05:06:07'
+    }
+    script {
+      name '1 of (1,1)'
+      apdu '8001010102:0101'
+    }
+    script {
+      name '1 of (2,3)'
+      apdu '8001010102:0203'
+    }
+    script {
+      name '1 of (3,5)'
+      apdu '8001010102:0305'
+    }
+    script {
+      name '2 of (2,3), (2,3), (2,3)'
+      apdu '8001020306:020302030203'
+    }
+    task {
+      name 'benchmark'
+      scripts 'select',
+        '1 of (1,1)',
+        '1 of (2,3)',
+        '1 of (3,5)',
+        '2 of (2,3), (2,3), (2,3)'
+    }
+  }
 }
