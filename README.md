@@ -45,7 +45,8 @@ Typical output:
 > counter of most secure elements, and eventually lock the card permanently.
 >
 > ```
-> # Replace with real key for distribution (use env variable or command line arg).
+> # Replace with a real key (use GRADLE_OPTS env variable or -P command line arg
+> # to override in release builds, do not add your real key to source control).
 > issuerKey=40:41:42:43:44:45:46:47:48:49:4A:4B:4C:4D:4E:4F
 > ```
 
@@ -55,6 +56,13 @@ Typical output:
 
 ```bash
 ./gradlew installJavaCard
+```
+
+To override project variables on the command line, for example to specify a production
+key, use the `-P` command line arg:
+
+```bash
+./gradlew installJavaCard -PissuerKey=...
 ```
 
 To inspect already installed applets:
@@ -159,8 +167,8 @@ Finished generating test html results (0.009 secs) into: ./applet/build/reports/
 
 Average of three runs to generate a set of shares from a 128-bit secret.
 
-| Group descriptors         | JCOP3 J3H145 | SLJ52WML140 |
-| ------------------------- | -----------: | ----------: |
+| Shares                    | JCOP3 J3H145 | SLJ52WML140 |
+| :------------------------ | -----------: | ----------: |
 | 1 of (1,1)                |       125 ms |       42 ms |
 | 1 of (2,3)                |       388 ms |      242 ms |
 | 1 of (3,5)                |       818 ms |      608 ms |
