@@ -1,3 +1,6 @@
+> [!NOTE]
+> Use the official fork at [BlockchainCommons/jc-sskr](https://github.com/BlockchainCommons/jc-sskr).
+
 # SSKR for JavaCard
 
 [![Build status](https://github.com/proxyco/jc-sskr/actions/workflows/gradle.yml/badge.svg)](https://github.com/proxyco/jc-sskr/actions/workflows/gradle.yml)
@@ -39,7 +42,7 @@ Typical output:
 
 ## Installation on a (physical) card
 
-> **Warning**
+> [!CAUTION]
 > Make sure to set the correct ISD key in [`gradle.properties`](./gradle.properties).
 > Attemping to authenticate with an incorrect key will increment the internal retry
 > counter of most secure elements, and eventually lock the card permanently.
@@ -50,7 +53,7 @@ Typical output:
 > issuerKey=40:41:42:43:44:45:46:47:48:49:4A:4B:4C:4D:4E:4F
 > ```
 
-> **Warning**
+> [!CAUTION]
 > This will delete any previous instances of the applet on your card.
 > Make sure you are prepared to lose any persistent data they store.
 
